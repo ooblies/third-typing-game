@@ -10,7 +10,7 @@ It's suggested that you filter down tests to avoid re-running everything. The mo
 To only run the webpack messages, type `p` followed by `webpack-message` and press `[enter]`.
 
 ## How do these work?
-
+ssss
 ### `fixtures/`
 
 Each `fixture/` gets spun up in a temporary directory and has its dependencies installed with Yarn PnP (for speed).<br>
@@ -20,7 +20,7 @@ A global (`testSetup`) is created which has a few interesting properties:
 
 - `testSetup.testDirectory`: the directory containing the test application
 - `testSetup.scripts`: an object allowing you to invoke `react-scripts` commands and friends
-
+s
 All tests for each `fixture/` are then ran.
 
 #### `testSetup.scripts`
