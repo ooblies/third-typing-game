@@ -20,7 +20,7 @@ A global (`testSetup`) is created which has a few interesting properties:
 
 - `testSetup.testDirectory`: the directory containing the test application
 - `testSetup.scripts`: an object allowing you to invoke `react-scripts` commands and friends
-
+s
 All tests for each `fixture/` are then ran.
 
 #### `testSetup.scripts`
