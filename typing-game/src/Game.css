@@ -59,7 +59,7 @@ body {
     width: 34px;
   }
 
-  .currentKey {
+  .activeKey {
     background-color: lawngreen;
   }
 

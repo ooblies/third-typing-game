@@ -2,110 +2,18 @@ import React from 'react';
 import './Game.css';
 
 
-class TimerInput extends React.Component {
-    render() {
-        return (
-            <div>
-                <h3>Input your time</h3>
-                <input type="number"  minutes={this.props.minutes} handleChange={this.props.handleChange} required />
-            </div>
-        );
-    }
-}
-
-class Timer extends React.Component {
-    render() {
-        return (
-            <div>
-                <h1>{this.props.minutes}:{this.props.seconds}</h1>
-            </div>
-        );
-    }
-}
-
-class StartButton extends React.Component {
-    render() { 
-        return (
-            <div>
-                <button onClick={this.props.startCountDown}>Start</button>
-            </div>
-        );
-    }
-}
-
-
-
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            seconds:'00',
-            minutes: '',
-        }        
-        this.startCountDown = this.startCountDown.bind(this);
-        this.tick = this.tick.bind(this);        
-        this.handleChange = this.handleChange.bind(this);
-        
-    }
-
-    handleChange(event) {
-        this.setState({
-            minutes: event.target.value
-        })
-    }
-
-    tick() {
-        var min = Math.floor(this.secondsRemaining / 60);
-        var sec = this.secondsRemaining - (min * 60);
-
-        this.setState({
-            minutes: min,
-            seconds: sec
-        });
-
-        if (sec < 10) {
-            this.setState({ 
-                seconds: "0" + this.state.seconds,
-            })
-        }
-
-        this.secondsRemaining--;
-    }
-
-    startCountDown() {
-        this.intervalHandle = setInterval(this.tick,1000);
-        let time = this.state.minutes;
-        this.secondsRemaining = time* 60;
-    }
-
-    render() { 
-        return (
-            <div>
-                <TimerInput minutes={this.state.minutes}/>
-                <Timer minutes={this.state.minutes} seconds={this.state.seconds}/>
-                <StartButton/>
-            </div>
-        );
-    }
-}
-
 function Key(props) {
     return (
-        <div className={"key " + (props.highlighted ? 'currentKey' : '') } >
+        <div className={"key " + (props.highlighted ? 'activeKey' : '') } >
             {props.value}
         </div>
     );
 }
 
 class Keyboard extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
     renderKey(i) {
         return (
-            <Key value={i} highlighted={this.props.currentKey === i}></Key>
-            
+            <Key value={i} highlighted={this.props.activeString.includes(i)}></Key> //this.props.currentKey === i            
         )
     }
 
@@ -113,59 +21,38 @@ class Keyboard extends React.Component {
         return (
             <div className="keyboard">
                 <div className="row-1">
-                    {this.renderKey('1')}
-                    {this.renderKey('2')}
-                    {this.renderKey('3')}
-                    {this.renderKey('4')}
-                    {this.renderKey('5')}
-                    {this.renderKey('6')}
-                    {this.renderKey('7')}
-                    {this.renderKey('8')}
-                    {this.renderKey('9')}
-                    {this.renderKey('0')}  
-                    {this.renderKey('-')}
-                    {this.renderKey('=')}   
+                    {this.renderKey('1')}{this.renderKey('2')}{this.renderKey('3')}{this.renderKey('4')}{this.renderKey('5')}{this.renderKey('6')}{this.renderKey('7')}{this.renderKey('8')}{this.renderKey('9')}
+                    {this.renderKey('0')}{this.renderKey('-')}{this.renderKey('=')}   
                 </div>
                 <div className="row-2">
-                    {this.renderKey('Q')}
-                    {this.renderKey('W')}
-                    {this.renderKey('E')}
-                    {this.renderKey('R')}
-                    {this.renderKey('T')}
-                    {this.renderKey('Y')}
-                    {this.renderKey('U')}
-                    {this.renderKey('I')}
-                    {this.renderKey('O')}
-                    {this.renderKey('P')}   
-                    {this.renderKey('[')}
-                    {this.renderKey(']')}                    
+                    {this.renderKey('Q')}{this.renderKey('W')}{this.renderKey('E')}{this.renderKey('R')}{this.renderKey('T')}{this.renderKey('Y')}{this.renderKey('U')}{this.renderKey('I')}{this.renderKey('O')}{this.renderKey('P')}
+                    {this.renderKey('[')}{this.renderKey(']')}
                 </div>
                 <div className="row-3">
-                    {this.renderKey('A')}
-                    {this.renderKey('S')}
-                    {this.renderKey('D')}
-                    {this.renderKey('F')}
-                    {this.renderKey('G')}
-                    {this.renderKey('H')}
-                    {this.renderKey('J')}
-                    {this.renderKey('K')}
-                    {this.renderKey('L')}
-                    {this.renderKey(';')}
-                    {this.renderKey("'")}                    
+                    {this.renderKey('A')}{this.renderKey('S')}{this.renderKey('D')}{this.renderKey('F')}{this.renderKey('G')}{this.renderKey('H')}{this.renderKey('J')}{this.renderKey('K')}{this.renderKey('L')}
+                    {this.renderKey(';')}{this.renderKey("'")}                    
                 </div>
                 <div className="row-4">
-                    {this.renderKey('Z')}
-                    {this.renderKey('X')}
-                    {this.renderKey('C')}
-                    {this.renderKey('V')}
-                    {this.renderKey('B')}
-                    {this.renderKey('N')}
-                    {this.renderKey('M')}
-                    {this.renderKey(',')}
-                    {this.renderKey('.')}
-                    {this.renderKey('/')}
+                    {this.renderKey('Z')}{this.renderKey('X')}{this.renderKey('C')}{this.renderKey('V')}{this.renderKey('B')}{this.renderKey('N')}{this.renderKey('M')}
+                    {this.renderKey(',')}{this.renderKey('.')}{this.renderKey('/')}
                 </div>
             </div>
+        );
+    }
+}
+
+class Config extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            
+        };
+    }
+
+    render() {
+
+        return (
+            <div>Config options</div>
         );
     }
 }
@@ -175,64 +62,124 @@ class Game extends React.Component {
         super(props);
         this.state = {            
             time: 3,
-            currentKey: 'Q',
-            keyHistory: Array(0),
+            keysPressed: 0,
+            activeKeys: Array(0),
+            frequency: 2,
+            duration: 5,
+            timeSinceLastSpawn: 0,
         };
     }
 
-    getNewKey() {
-        let k = Math.random().toString(36).slice(2,3).toUpperCase();
 
-        var ktp = {
-            key:k,
-            time: this.state.time,
-        };        
 
-        console.log(this.state.keyHistory);
+    tick() {
+        var tsls = this.state.timeSinceLastSpawn;
+        var freq = this.state.frequency;
+
+        if (tsls >= freq) {
+            tsls = 0;
+            this.addActiveKey();
+        } else {
+            tsls += 0.1;
+        }        
 
         this.setState({
-            keyHistory:  this.state.keyHistory.concat(ktp),
+            timeSinceLastSpawn: tsls,
         });
 
-        console.log(this.state.keyHistory);
-  
+        //console.log('tick');
+    }
+
+    addActiveKey() {
+        
+        var nextKey = {
+            key: this.getNewKey(),
+            time: this.state.time,
+        };     
+
+        var activeKeys = this.state.activeKeys.concat(nextKey);
+
+        this.setState({
+            activeKeys:  activeKeys,
+        });
+
+        console.log("Key Added - " + nextKey.key + " - Active - " + this.getActiveString() + nextKey.key);
+    }
+
+    getNewKey(oldKey) {
+        let k = Math.random().toString(36).slice(2,3).toUpperCase();
+
+        return k;
+    }
+
+    getActiveString() {
+        var str = "";
+
+        this.state.activeKeys.forEach(function(element) { 
+            str = str + element.key;
+        });
+
+        return str;
     }
 
     componentWillMount() {
         document.addEventListener("keydown", this.onKeyPressed.bind(this));
+        this.intervalHandle = setInterval(this.tick,100);
     }
 
     componentWillUnmount() {
         document.removeEventListener("keydown", this.onKeyPressed.bind(this));
+        clearInterval(this.interval);
     }      
 
     onKeyPressed(e) {
-        if (e) {
-            if (e.key.toUpperCase() === this.state.currentKey.toUpperCase()) {
-                this.getNewKey();
-                console.log("Correct Press! - " + e.key.toUpperCase());
-            } else {
-                console.log("Incorrect Press! " + e.key.toUpperCase() + " vs. " + this.state.currentKey.toUpperCase());
-            }
-        }        
-    }
+    if (e) {
+        if (this.getActiveString().includes(e.key.toUpperCase()))  //e.key.toUpperCase() === this.state.currentKey.toUpperCase()) {
+            
+            console.log("Correct Press! - " + e.key.toUpperCase());
+
+
+            var nextKey = {
+                key: this.getNewKey(),
+                time: this.state.time,
+            };        
+
+            console.log("Next Key ~ " + nextKey.key);
+
+            var activeKeys = this.state.activeKeys.filter(key => e.key.toUpperCase() !== key.key.toUpperCase());
+            activeKeys = activeKeys.concat(nextKey);
+
+            var keysPressed = this.state.keysPressed + 1;
+
+            this.setState({
+                activeKeys:  activeKeys,
+                keysPressed: keysPressed,
+            });
+    
+            console.log(this.state);
+        } else if (e !== undefined) {
+            console.log("You missed it~ dummy");
+        }
+    }        
+
 
     render() {    
         let status;
-        status = 'Current Key is : ' + this.state.currentKey;
+        status = 'Current Key String is : ' + this.getActiveString();
 
         return (
             <div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <button onClick={() => this.newKey()}>Next button~</button>                    
+                    <button onClick={() => this.addActiveKey()}>Add Key</button>                    
                 </div> 
                 <br/>
+                <Config frequency={this.state.frequency} duration={this.state.duration}></Config>
             <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">          
                 
                 <br/>
                 <div>
-                    <Keyboard currentKey={this.state.currentKey} />                    
+                    <Keyboard activeKeys={this.state.activeKeys} activeString={this.getActiveString()} />                    
                 </div>
             </div>
             
