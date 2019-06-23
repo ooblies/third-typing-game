@@ -5,7 +5,7 @@ import './Game.css';
 function Key(props) {
     return (
         <div className={"key " + (props.highlighted ? 'activeKey' : '') } >
-            {props.value}
+            {props.showKeys ? props.value : ""}
         </div>
     );
 }
@@ -13,7 +13,7 @@ function Key(props) {
 class Keyboard extends React.Component {
     renderKey(i) {
         return (
-            <Key value={i} highlighted={this.props.activeString.includes(i)}></Key> //this.props.currentKey === i            
+            <Key value={i} highlighted={this.props.activeString.includes(i)} showKeys={this.props.showKeys}></Key>     
         )
     }
 
@@ -45,14 +45,28 @@ class Config extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            
+            config: props.config,
         };
+    }
+
+    updateConfig() {
+        console.log(this.state.config);
+        this.props.updateConfig(this.state.config);
     }
 
     render() {
 
         return (
-            <div>Config options</div>
+            <div>
+                <div>Config options</div>
+                <label>Frequency: {this.props.config.frequency}</label><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.frequency} onChange={(e) => this.updateConfig(e)}></input>
+                <br/>
+                <label>Duration: {this.props.config.duration}</label><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateConfig(e)}}></input>
+                <br/>
+                <label>Lives: {this.props.config.lives}</label><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateConfig(e)}}></input>
+                <br/>
+                <label>Show Keys:</label> <input type="checkbox" value={this.state.config.showKeys} onChange={(e) => {this.updateConfig(e)}}></input>
+            </div>
         );
     }
 }
@@ -60,41 +74,82 @@ class Config extends React.Component {
 class Game extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {            
-            time: 3,
+        this.state = {  
             keysPressed: 0,
-            activeKeys: Array(0),
-            frequency: 2,
-            duration: 5,
             timeSinceLastSpawn: 0,
+            keysMiseed: 0,
+            activeKeys: Array(0),
+            isStarted: false,
+            config: {
+                lives: 3,
+                frequency: 2,
+                duration: 5,
+                showKeys: true,
+            },
         };
+
+        this.removeKey = this.removeKey.bind(this);
+        this.updateConfig = this.updateConfig.bind(this);
     }
 
-
+    updateConfig(config) {
+        console.log(config);
+        this.setState({
+            config: config,
+        });
+    }
 
     tick() {
-        var tsls = this.state.timeSinceLastSpawn;
-        var freq = this.state.frequency;
-
-        if (tsls >= freq) {
-            tsls = 0;
-            this.addActiveKey();
-        } else {
-            tsls += 0.1;
-        }        
-
-        this.setState({
-            timeSinceLastSpawn: tsls,
-        });
-
-        //console.log('tick');
+        if (this.state.isStarted) {
+            var tsls = this.state.timeSinceLastSpawn ? this.state.timeSinceLastSpawn : 0;
+            var freq = this.state.config.frequency;
+    
+            //at each freq. add a key
+            if (tsls >= freq) {
+                tsls = 0;
+                this.addActiveKey();
+            } else {
+                tsls += 0.1;
+            }              
+            
+            //loop through active -- life for each at 0
+            var akeys = this.state.activeKeys;
+            var config = this.state.config;
+            var keysToRemove = [];
+    
+            akeys.forEach(function(key) {
+                key.time -= 0.1;
+                if (key.time <= 0) {
+                    keysToRemove.push(key.key);
+                    config.lives--;
+                }
+            });
+    
+            //update state
+            this.setState({
+                timeSinceLastSpawn: tsls,
+                activeKeys: akeys,
+                config: config,
+            });    
+    
+            //remove missed active keys
+            var self = this;
+            keysToRemove.forEach(function(key) {
+                self.removeKey(key);
+            });
+            
+            //game over
+            if (this.state.config.lives <= 0) {
+                this.resetGame();
+            }
+        }           
     }
 
     addActiveKey() {
         
         var nextKey = {
             key: this.getNewKey(),
-            time: this.state.time,
+            time: this.state.config.duration,
         };     
 
         var activeKeys = this.state.activeKeys.concat(nextKey);
@@ -103,7 +158,7 @@ class Game extends React.Component {
             activeKeys:  activeKeys,
         });
 
-        console.log("Key Added - " + nextKey.key + " - Active - " + this.getActiveString() + nextKey.key);
+        console.log("Key Added - " + nextKey.key + " - Active - " + this.getActiveString());
     }
 
     getNewKey(oldKey) {
@@ -124,7 +179,7 @@ class Game extends React.Component {
 
     componentWillMount() {
         document.addEventListener("keydown", this.onKeyPressed.bind(this));
-        this.intervalHandle = setInterval(this.tick,100);
+        this.intervalHandle = setInterval(this.tick.bind(this),100);
     }
 
     componentWillUnmount() {
@@ -132,36 +187,55 @@ class Game extends React.Component {
         clearInterval(this.interval);
     }      
 
+    removeKey(rkey) {
+        var activeKeys = this.state.activeKeys.filter(key => rkey.toUpperCase() !== key.key.toUpperCase());
+
+        this.setState({
+            activeKeys: activeKeys,
+        });
+    }
+
     onKeyPressed(e) {
-    if (e) {
-        if (this.getActiveString().includes(e.key.toUpperCase()))  //e.key.toUpperCase() === this.state.currentKey.toUpperCase()) {
-            
-            console.log("Correct Press! - " + e.key.toUpperCase());
-
-
-            var nextKey = {
-                key: this.getNewKey(),
-                time: this.state.time,
-            };        
-
-            console.log("Next Key ~ " + nextKey.key);
-
-            var activeKeys = this.state.activeKeys.filter(key => e.key.toUpperCase() !== key.key.toUpperCase());
-            activeKeys = activeKeys.concat(nextKey);
-
-            var keysPressed = this.state.keysPressed + 1;
-
-            this.setState({
-                activeKeys:  activeKeys,
-                keysPressed: keysPressed,
-            });
+        if (e) {
+            if (this.getActiveString().includes(e.key.toUpperCase()))
+            {                
+                this.removeKey(e.key)
     
-            console.log(this.state);
+                this.setState({
+                    keysPressed: this.state.keysPressed + 1,
+                });
+            } else {
+                //Missed it
+                var config = this.state.config;
+                config.lives--;
+
+                this.setState({
+                    config: config,
+                });
+
+                console.log("You missed it~ dummy. " + this.state.config.lives + " lives left...");
+            } 
         } else if (e !== undefined) {
-            console.log("You missed it~ dummy");
+            console.log("uh oh");
         }
     }        
 
+    startGame() {
+        this.setState({
+            isStarted: true,
+        });
+    }
+
+    resetGame() {
+        alert("Game Over, Man. Your score was - " + this.state.keysPressed);
+        this.setState({
+            isStarted: false,
+            activeKeys: [],
+            keysPressed: 0,
+            timeSinceLastSpawn: 0,
+            keysMiseed: 0,
+        });
+    }
 
     render() {    
         let status;
@@ -174,12 +248,13 @@ class Game extends React.Component {
                     <button onClick={() => this.addActiveKey()}>Add Key</button>                    
                 </div> 
                 <br/>
-                <Config frequency={this.state.frequency} duration={this.state.duration}></Config>
-            <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">          
+                <Config updateConfig={this.updateConfig} config={this.state.config} ></Config>
+                <button onClick={() => this.startGame()}>Start Game~</button>
+                <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">          
                 
                 <br/>
                 <div>
-                    <Keyboard activeKeys={this.state.activeKeys} activeString={this.getActiveString()} />                    
+                    <Keyboard activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} />                    
                 </div>
             </div>
             
