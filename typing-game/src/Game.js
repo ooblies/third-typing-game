@@ -102,9 +102,9 @@ class Config extends React.Component {
         return (
             <div>
                 <div>Config options</div>
-                <label>Frequency: {this.props.config.frequency}</label><br/><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
+                <label>Frequency: {this.props.config.frequency}</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
                 <br/><br/>
-                <label>Duration: {this.props.config.duration}</label><br/><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
+                <label>Duration: {this.props.config.duration}</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
                 <br/><br/>
                 <label>Lives: {this.props.config.lives}</label><br/><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
                 <br/><br/>
@@ -316,14 +316,17 @@ class Game extends React.Component {
         });
     }
 
-    componentDidMount() {         
-        const parsed = queryString.parse(window.location.search.substring(1));
-        var conf = JSON.parse(parsed.config);
+    componentDidMount() {  
+        if (window.location.search.length > 0) {
+            const parsed = queryString.parse(window.location.search.substring(1));
+        
+            var conf = JSON.parse(parsed.config);
 
-        this.setState({
-            config:conf,
-            scoreToBeat:parsed.score,
-        });
+            this.setState({
+                config:conf,
+                scoreToBeat:parsed.score,
+            });
+        }        
     }
 
     shareGame() {
