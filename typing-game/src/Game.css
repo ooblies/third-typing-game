@@ -63,6 +63,10 @@ body {
     background-color: lawngreen;
   }
 
+  .errorKey {
+    background-color: red !important;
+  }
+
   .square:focus {
     outline: none;
   }

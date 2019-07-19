@@ -1,19 +1,21 @@
 import React from 'react';
 import './Game.css';
+var queryString = require('querystring');
 
-
-function Key(props) {
-    return (
-        <div className={"key " + (props.highlighted ? 'activeKey' : '') } >
-            {props.showKeys ? props.value : ""}
-        </div>
-    );
+class Key extends React.Component {
+    render() {
+        return (
+            <div className={"key " + (this.props.highlighted ? 'activeKey' : '') + (this.props.error ? 'errorKey' : '')} >
+                {this.props.showKeys ? this.props.value : ""}
+            </div>
+        );
+    }    
 }
 
 class Keyboard extends React.Component {
     renderKey(i) {
         return (
-            <Key value={i} highlighted={this.props.activeString.includes(i)} showKeys={this.props.showKeys}></Key>     
+            <Key value={i} highlighted={this.props.activeString.includes(i)} showKeys={this.props.showKeys} error={this.props.errorKeys.includes(i)}></Key>     
         )
     }
 
@@ -47,11 +49,52 @@ class Config extends React.Component {
         this.state = {
             config: props.config,
         };
+
+        console.log(this.state.config);
     }
 
-    updateConfig() {
-        console.log(this.state.config);
+    updateConfig() {        
         this.props.updateConfig(this.state.config);
+    }
+    updateFrequency(e) {
+        var config  = this.state.config;
+        config.frequency = Number(e.target.value);
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateDuration(e) {
+        var config  = this.state.config;
+        config.duration = Number(e.target.value);
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateLives(e) {
+        var config  = this.state.config;
+        config.lives = Number(e.target.value);
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateShowKeys(e) {
+        var config  = this.state.config;
+        config.showKeys = !this.state.config.showKeys;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
     }
 
     render() {
@@ -59,13 +102,13 @@ class Config extends React.Component {
         return (
             <div>
                 <div>Config options</div>
-                <label>Frequency: {this.props.config.frequency}</label><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.frequency} onChange={(e) => this.updateConfig(e)}></input>
-                <br/>
-                <label>Duration: {this.props.config.duration}</label><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateConfig(e)}}></input>
-                <br/>
-                <label>Lives: {this.props.config.lives}</label><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateConfig(e)}}></input>
-                <br/>
-                <label>Show Keys:</label> <input type="checkbox" value={this.state.config.showKeys} onChange={(e) => {this.updateConfig(e)}}></input>
+                <label>Frequency: {this.props.config.frequency}</label><br/><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
+                <br/><br/>
+                <label>Duration: {this.props.config.duration}</label><br/><input type="range" min="0.1" max="10" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
+                <br/><br/>
+                <label>Lives: {this.props.config.lives}</label><br/><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
+                <br/><br/>
+                <label>Show Keys:</label> <input type="checkbox" checked={this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
             </div>
         );
     }
@@ -79,6 +122,7 @@ class Game extends React.Component {
             timeSinceLastSpawn: 0,
             keysMiseed: 0,
             activeKeys: Array(0),
+            errorKeys: Array(0),
             isStarted: false,
             config: {
                 lives: 3,
@@ -93,7 +137,6 @@ class Game extends React.Component {
     }
 
     updateConfig(config) {
-        console.log(config);
         this.setState({
             config: config,
         });
@@ -116,12 +159,14 @@ class Game extends React.Component {
             var akeys = this.state.activeKeys;
             var config = this.state.config;
             var keysToRemove = [];
+            var errorKeys = [];
     
             akeys.forEach(function(key) {
                 key.time -= 0.1;
                 if (key.time <= 0) {
                     keysToRemove.push(key.key);
                     config.lives--;
+                    errorKeys.push(key.key);                    
                 }
             });
     
@@ -137,11 +182,18 @@ class Game extends React.Component {
             keysToRemove.forEach(function(key) {
                 self.removeKey(key);
             });
+
+            errorKeys.forEach(function(key) {
+                self.addErrorKey(key);
+            })
             
             //game over
             if (this.state.config.lives <= 0) {
-                this.resetGame();
-            }
+                this.setState({
+                    isStarted: false,
+                    activeKeys: [],
+                });
+            }            
         }           
     }
 
@@ -195,39 +247,66 @@ class Game extends React.Component {
         });
     }
 
-    onKeyPressed(e) {
-        if (e) {
-            if (this.getActiveString().includes(e.key.toUpperCase()))
-            {                
-                this.removeKey(e.key)
-    
-                this.setState({
-                    keysPressed: this.state.keysPressed + 1,
-                });
-            } else {
-                //Missed it
-                var config = this.state.config;
-                config.lives--;
+    removeErrorKey(rkey) {
+        var errorKeys = this.state.errorKeys.filter(key => rkey !== key);
 
-                this.setState({
-                    config: config,
-                });
+        this.setState({
+            errorKeys: errorKeys,
+        });
+    }
 
-                console.log("You missed it~ dummy. " + this.state.config.lives + " lives left...");
-            } 
-        } else if (e !== undefined) {
-            console.log("uh oh");
-        }
-    }        
+    addErrorKey(key) {
+        var errorKeys = this.state.errorKeys;
+        errorKeys.push(key);
+
+        setTimeout(function() {
+            this.removeErrorKey(key);
+        }.bind(this),200);
+                
+        this.setState({
+            errorKeys: errorKeys,
+        });
+    }
+
+    onKeyPressed(e) {      
+        if (this.state.isStarted) {  
+            if (e) {
+                var k = e.key.toUpperCase();
+                if (this.getActiveString().includes(k))
+                {                
+                    this.removeKey(k)
+        
+                    this.setState({
+                        keysPressed: this.state.keysPressed + 1,
+                    });
+                } else {
+                    //Missed it
+                    var config = this.state.config;
+                    config.lives--;
+
+                    this.addErrorKey(k);
+
+                    this.setState({
+                        config: config,
+                    });
+
+                    console.log("You missed it~ dummy. " + this.state.config.lives + " lives left...");
+                } 
+            } else if (e !== undefined) {
+                console.log("uh oh");
+            }
+        }        
+    }
 
     startGame() {
+        this.resetGame();
         this.setState({
             isStarted: true,
         });
     }
 
     resetGame() {
-        alert("Game Over, Man. Your score was - " + this.state.keysPressed);
+        //alert("Game Over, Man. Your score was - " + this.state.keysPressed);
         this.setState({
             isStarted: false,
             activeKeys: [],
@@ -235,6 +314,22 @@ class Game extends React.Component {
             timeSinceLastSpawn: 0,
             keysMiseed: 0,
         });
+    }
+
+    componentDidMount() {         
+        const parsed = queryString.parse(window.location.search.substring(1));
+        var conf = JSON.parse(parsed.config);
+
+        this.setState({
+            config:conf,
+            scoreToBeat:parsed.score,
+        });
+    }
+
+    shareGame() {
+        this.setState({
+            shareURL: window.location.href.split('?')[0] + '?config=' + JSON.stringify(this.state.config) + '&score=' + this.state.keysPressed,
+        });        
     }
 
     render() {    
@@ -247,19 +342,23 @@ class Game extends React.Component {
                     <div>{status}</div>
                     <button onClick={() => this.addActiveKey()}>Add Key</button>                    
                 </div> 
+                <label>Score: {this.state.keysPressed}</label>
                 <br/>
+                <label>Score To Beat: {this.state.scoreToBeat}</label>
+                <br/><br/>
                 <Config updateConfig={this.updateConfig} config={this.state.config} ></Config>
                 <button onClick={() => this.startGame()}>Start Game~</button>
-                <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">          
-                
+                <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">                          
+                    <br/>
+                    <div>
+                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} />                    
+                    </div>
+                </div> 
+
+                <button onClick={() => this.shareGame()}>Share</button>     
                 <br/>
-                <div>
-                    <Keyboard activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} />                    
-                </div>
-            </div>
-            
-        </div>
-        
+                <a href={this.state.shareURL}>{this.state.shareURL}</a>      
+            </div>        
         );
     }
 }
