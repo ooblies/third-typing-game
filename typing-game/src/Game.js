@@ -5,7 +5,7 @@ var queryString = require('querystring');
 class Key extends React.Component {
     render() {
         return (
-            <div className={"key " + (this.props.highlighted ? 'activeKey' : '') + (this.props.error ? 'errorKey' : '')} >
+            <div className={"key " + (this.props.highlighted ? 'activeKey' : ' ') + (this.props.error ? 'errorKey' : ' ') + (this.props.value === "SHIFT" ? 'shift':' ') + (this.props.highlightShift ? "shifted" : ' ')} >
                 {this.props.showKeys ? this.props.value : ""}
             </div>
         );
@@ -13,9 +13,32 @@ class Key extends React.Component {
 }
 
 class Keyboard extends React.Component {
-    renderKey(i) {
+    renderKey(key,shift) {
+        var display = key;
+        if (!this.props.caseSensitive && "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(key.toUpperCase())) {            
+            display = shift;
+        }
+        if (this.props.caseSensitive && this.props.shift) {
+            display = shift;
+        }
+
+        var high = this.props.activeString.includes(display);
+
+        var shifted = false;
+        if (this.props.caseSensitive) {            
+            if (this.props.shift && "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./".includes(key) && this.props.activeString.includes(key) ) {
+                shifted = true;
+                display = key;
+            }
+            if (!this.props.shift && 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:"<>?'.includes(shift) && this.props.activeString.includes(shift)) {                
+                shifted = true;
+                display = shift;
+            }
+        }
+        
+        
         return (
-            <Key value={i} highlighted={this.props.activeString.includes(i)} showKeys={this.props.showKeys} error={this.props.errorKeys.includes(i)}></Key>     
+            <Key value={display} shiftKey={shift} highlighted={high} showKeys={this.props.showKeys} error={this.props.errorKeys.includes(display)} highlightShift={shifted}></Key>     
         )
     }
 
@@ -23,20 +46,22 @@ class Keyboard extends React.Component {
         return (
             <div className="keyboard">
                 <div className="row-1">
-                    {this.renderKey('1')}{this.renderKey('2')}{this.renderKey('3')}{this.renderKey('4')}{this.renderKey('5')}{this.renderKey('6')}{this.renderKey('7')}{this.renderKey('8')}{this.renderKey('9')}
-                    {this.renderKey('0')}{this.renderKey('-')}{this.renderKey('=')}   
+                    {this.renderKey('1','!')}{this.renderKey('2','@')}{this.renderKey('3','#')}{this.renderKey('4','$')}{this.renderKey('5','%')}{this.renderKey('6','^')}{this.renderKey('7','&')}{this.renderKey('8','*')}{this.renderKey('9','(')}
+                    {this.renderKey('0',')')}{this.renderKey('-','_')}{this.renderKey('=','+')}   
                 </div>
                 <div className="row-2">
-                    {this.renderKey('Q')}{this.renderKey('W')}{this.renderKey('E')}{this.renderKey('R')}{this.renderKey('T')}{this.renderKey('Y')}{this.renderKey('U')}{this.renderKey('I')}{this.renderKey('O')}{this.renderKey('P')}
-                    {this.renderKey('[')}{this.renderKey(']')}
+                    {this.renderKey('q','Q')}{this.renderKey('w','W')}{this.renderKey('e','E')}{this.renderKey('r','R')}{this.renderKey('t','T')}{this.renderKey('y','Y')}{this.renderKey('u','U')}{this.renderKey('i','I')}{this.renderKey('o','O')}{this.renderKey('p','P')}
+                    {this.renderKey('[','{')}{this.renderKey(']','}')}
                 </div>
                 <div className="row-3">
-                    {this.renderKey('A')}{this.renderKey('S')}{this.renderKey('D')}{this.renderKey('F')}{this.renderKey('G')}{this.renderKey('H')}{this.renderKey('J')}{this.renderKey('K')}{this.renderKey('L')}
-                    {this.renderKey(';')}{this.renderKey("'")}                    
+                    {this.renderKey('a','A')}{this.renderKey('s','S')}{this.renderKey('d','D')}{this.renderKey('f','F')}{this.renderKey('g','G')}{this.renderKey('h','H')}{this.renderKey('j','J')}{this.renderKey('k','K')}{this.renderKey('l','L')}
+                    {this.renderKey(';',':')}{this.renderKey("'",'"')}                    
                 </div>
                 <div className="row-4">
-                    {this.renderKey('Z')}{this.renderKey('X')}{this.renderKey('C')}{this.renderKey('V')}{this.renderKey('B')}{this.renderKey('N')}{this.renderKey('M')}
-                    {this.renderKey(',')}{this.renderKey('.')}{this.renderKey('/')}
+                    {this.renderKey('SHIFT','SHIFT')}
+                    {this.renderKey('z','Z')}{this.renderKey('x','X')}{this.renderKey('c','C')}{this.renderKey('v','V')}{this.renderKey('b','B')}{this.renderKey('n','N')}{this.renderKey('m','M')}
+                    {this.renderKey(',','<')}{this.renderKey('.','>')}{this.renderKey('/','?')}
+                    {this.renderKey('SHIFT','SHIFT')}
                 </div>
             </div>
         );
@@ -96,19 +121,31 @@ class Config extends React.Component {
         
         this.updateConfig();
     }
+    updateCaseSensitive(e) {
+        var config  = this.state.config;
+        config.caseSensitive = !this.state.config.caseSensitive;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
 
     render() {
 
         return (
             <div>
                 <div>Config options</div>
-                <label>Frequency: {this.props.config.frequency}</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
+                <label>Key Per Minute: {60 / this.props.config.frequency} KPM</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
                 <br/><br/>
-                <label>Duration: {this.props.config.duration}</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
+                <label>Key Duration: {this.props.config.duration}s</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
                 <br/><br/>
                 <label>Lives: {this.props.config.lives}</label><br/><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
                 <br/><br/>
                 <label>Show Keys:</label> <input type="checkbox" checked={this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
+                <br/><br/>
+                <label>Case Sensitive:</label> <input type="checkbox" checked={this.state.config.caseSensitive} onChange={(e) => {this.updateCaseSensitive(e)}}></input>
             </div>
         );
     }
@@ -124,11 +161,13 @@ class Game extends React.Component {
             activeKeys: Array(0),
             errorKeys: Array(0),
             isStarted: false,
+            shift: false,
             config: {
                 lives: 3,
                 frequency: 2,
                 duration: 5,
                 showKeys: true,
+                caseSensitive: true,
             },
         };
 
@@ -213,8 +252,19 @@ class Game extends React.Component {
         console.log("Key Added - " + nextKey.key + " - Active - " + this.getActiveString());
     }
 
-    getNewKey(oldKey) {
-        let k = Math.random().toString(36).slice(2,3).toUpperCase();
+    getNewKey() {
+        var insensitive = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=[];',./";
+        var sensitive = 'abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+{}:"<>?';
+
+        var caseSensitive = this.state.config.caseSensitive;
+
+        if (caseSensitive) { 
+            var rand = Math.floor(Math.random() * (insensitive.length + sensitive.length + 1));
+            var k = (insensitive + sensitive).substr(rand,1);
+        } else {
+            var rand = Math.floor(Math.random() * (insensitive.length + 1));
+            var k = (insensitive).substr(rand,1);
+        }
 
         return k;
     }
@@ -231,11 +281,13 @@ class Game extends React.Component {
 
     componentWillMount() {
         document.addEventListener("keydown", this.onKeyPressed.bind(this));
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
         this.intervalHandle = setInterval(this.tick.bind(this),100);
     }
 
     componentWillUnmount() {
         document.removeEventListener("keydown", this.onKeyPressed.bind(this));
+        document.removeEventListener('keyup', this.onKeyUp.bind(this));
         clearInterval(this.interval);
     }      
 
@@ -268,10 +320,28 @@ class Game extends React.Component {
         });
     }
 
-    onKeyPressed(e) {      
+    onKeyUp (e) {     
+        if (e) {
+            if (e.key === 'Shift') {
+                this.setState({
+                    shift: false,
+                })
+            }            
+        }
+    }
+    onKeyPressed(e) { 
+          
+        if (e) {
+            if (e.key === 'Shift') {
+                this.setState({
+                    shift: true,
+                })
+                return;
+            }            
+        }
         if (this.state.isStarted) {  
             if (e) {
-                var k = e.key.toUpperCase();
+                var k = e.key;
                 if (this.getActiveString().includes(k))
                 {                
                     this.removeKey(k)
@@ -354,7 +424,7 @@ class Game extends React.Component {
                 <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">                          
                     <br/>
                     <div>
-                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} />                    
+                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} shift={this.state.shift} caseSensitive={this.state.config.caseSensitive}/>                    
                     </div>
                 </div> 
 

@@ -13,14 +13,19 @@ body {
     display: table;
   }
 
+.row-1 {
+  margin-left: 10px;
+}
 .row-2 {
-    margin-left:17px;
+    margin-left:27px;
 }
 .row-3 {
-    margin-left:34px;
+    margin-left:44px;
 }
-.row-4 {
-    margin-left:51px;
+
+.shift {
+  width:56px !important;
+  font-size: 16px !important;
 }
   
 
@@ -61,6 +66,10 @@ body {
 
   .activeKey {
     background-color: lawngreen;
+  }
+
+  .shifted {
+    background-color: aquamarine;
   }
 
   .errorKey {
