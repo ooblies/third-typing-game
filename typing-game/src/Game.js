@@ -2,10 +2,27 @@ import React from 'react';
 import './Game.css';
 var queryString = require('querystring');
 
+
+//Upper
+var _upperLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var _upperSymbols = '!@#$%^&*()_+{}:"<>?';
+var _allUpper = _upperLetters + _upperSymbols;
+
+//Lower
+var _numbers = "1234567890";
+var _lowerSymbols = "-=[];',./";
+var _lowerLetters = "abcdefghijklmnopqrstuvwxyz";
+var _allLower = _numbers + _lowerSymbols + _lowerLetters;
+
 class Key extends React.Component {
     render() {
         return (
-            <div className={"key " + (this.props.highlighted ? 'activeKey' : ' ') + (this.props.error ? 'errorKey' : ' ') + (this.props.value === "SHIFT" ? 'shift':' ') + (this.props.highlightShift ? "shifted" : ' ')} >
+            <div className={"key " + (this.props.highlighted ? ' activeKey' : '') 
+                                   + (this.props.error ? ' errorKey' : '') 
+                                   + (this.props.value === "SHIFT" ? ' shift':'') 
+                                   + (this.props.disabled ? ' disabled' : '')
+                                   + (this.props.highlightShift ? " shifted" : '') 
+                                   + (this.props.pressed ? ' pressed' : '')} >
                 {this.props.showKeys ? this.props.value : ""}
             </div>
         );
@@ -14,35 +31,67 @@ class Key extends React.Component {
 
 class Keyboard extends React.Component {
     renderKey(key,shift) {
+        var config = this.props.config;
+
         var display = key;
-        if (!this.props.caseSensitive && "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(key.toUpperCase())) {            
-            display = shift;
-        }
-        if (this.props.caseSensitive && this.props.shift) {
-            display = shift;
-        }
+        var shifted = false;    
+        var disabled = false;                
 
-        var high = this.props.activeString.includes(display);
-
-        var shifted = false;
-        if (this.props.caseSensitive) {            
-            if (this.props.shift && "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./".includes(key) && this.props.activeString.includes(key) ) {
+        if (this.props.shift) {            
+            display = shift;
+            if (this.props.activeString.includes(key)) {
                 shifted = true;
                 display = key;
-            }
-            if (!this.props.shift && 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:"<>?'.includes(shift) && this.props.activeString.includes(shift)) {                
+            }        
+            if (this.props.activeString.includes(shift)) {
+                shifted = false;
+                display = shift;
+            } 
+        } else {    
+            display = key;        
+            if (this.props.activeString.includes(shift)) {
+                display = shift;
                 shifted = true;
+            }    
+            if (this.props.activeString.includes(key)) {
+                display = key;
+                shifted = false;
+            }
+        }
+
+        if (!config.allowNumbers && _numbers.includes(key)) {            
+            disabled = true;
+            display =  this.props.activeString.includes(key) || this.props.activeString.includes(shift) ? display : "";
+            if (this.props.shift && _upperSymbols.includes(shift)) {
+                disabled = false;
                 display = shift;
             }
         }
-        
+
+        if (!config.allowSymbols && (_lowerSymbols.includes(key) || (this.props.shift && _upperSymbols.includes(shift)))) {
+            disabled = true;
+            display = this.props.activeString.includes(key) || this.props.activeString.includes(shift) ? display : "";
+        }
+
+        if (!config.allowLowercase && !this.props.shift && _lowerLetters.includes(key)) {
+            disabled = true;
+            display = this.props.activeString.includes(key) || this.props.activeString.includes(shift) ? display : "";
+        }
+        if (!config.allowUppercase && this.props.shift && _upperLetters.includes(shift)) {
+            disabled = true;
+            display = this.props.activeString.includes(key) || this.props.activeString.includes(shift) ? display : "";
+        }
+
         
         return (
-            <Key value={display} shiftKey={shift} highlighted={high} showKeys={this.props.showKeys} error={this.props.errorKeys.includes(display)} highlightShift={shifted}></Key>     
+            <Key value={display} shiftKey={shift} highlighted={this.props.activeString.includes(display)} showKeys={config.showKeys} error={this.props.errorKeys.includes(display)} highlightShift={shifted} disabled={disabled}></Key>     
         )
     }
 
     render() {
+        if (!this.props.config.showKeyboard) {
+            return null;
+        }
         return (
             <div className="keyboard">
                 <div className="row-1">
@@ -121,9 +170,49 @@ class Config extends React.Component {
         
         this.updateConfig();
     }
-    updateCaseSensitive(e) {
+    updateAllowLowercase(e) {
         var config  = this.state.config;
-        config.caseSensitive = !this.state.config.caseSensitive;
+        config.allowLowercase = !this.state.config.allowLowercase;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateAllowUppercase(e) {
+        var config  = this.state.config;
+        config.allowUppercase = !this.state.config.allowUppercase;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateAllowNumbers(e) {
+        var config  = this.state.config;
+        config.allowNumbers = !this.state.config.allowNumbers;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateAllowSymbols(e) {
+        var config  = this.state.config;
+        config.allowSymbols = !this.state.config.allowSymbols;
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+    }
+    updateShowKeyboard(e) {
+        var config  = this.state.config;
+        config.showKeyboard = !this.state.config.showKeyboard;
         
         this.setState({
             config: config,
@@ -143,9 +232,17 @@ class Config extends React.Component {
                 <br/><br/>
                 <label>Lives: {this.props.config.lives}</label><br/><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
                 <br/><br/>
-                <label>Show Keys:</label> <input type="checkbox" checked={this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
+                <label>Show Labels:</label> <input type="checkbox" checked={this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
                 <br/><br/>
-                <label>Case Sensitive:</label> <input type="checkbox" checked={this.state.config.caseSensitive} onChange={(e) => {this.updateCaseSensitive(e)}}></input>
+                <label>Show Keyboard:</label> <input type="checkbox" checked={this.state.config.showKeyboard} onChange={(e) => {this.updateShowKeyboard(e)}}></input>
+                <br/><br/>
+                <label>Allow Uppercase:</label> <input type="checkbox" checked={this.state.config.allowUppercase} onChange={(e) => {this.updateAllowUppercase(e)}}></input>                
+                <br/><br/>
+                <label>Allow Lowercase:</label> <input type="checkbox" checked={this.state.config.allowLowercase} onChange={(e) => {this.updateAllowLowercase(e)}}></input>
+                <br/><br/>
+                <label>Allow Numbers:</label> <input type="checkbox" checked={this.state.config.allowNumbers} onChange={(e) => {this.updateAllowNumbers(e)}}></input>
+                <br/><br/>
+                <label>Allow Symbols:</label> <input type="checkbox" checked={this.state.config.allowSymbols} onChange={(e) => {this.updateAllowSymbols(e)}}></input>
             </div>
         );
     }
@@ -167,7 +264,11 @@ class Game extends React.Component {
                 frequency: 2,
                 duration: 5,
                 showKeys: true,
-                caseSensitive: true,
+                showKeyboard: true,
+                allowUppercase: true,
+                allowLowercase: true,
+                allowNumbers: true,
+                allowSymbols: true,
             },
         };
 
@@ -253,18 +354,22 @@ class Game extends React.Component {
     }
 
     getNewKey() {
-        var insensitive = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=[];',./";
-        var sensitive = 'abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+{}:"<>?';
-
-        var caseSensitive = this.state.config.caseSensitive;
-
-        if (caseSensitive) { 
-            var rand = Math.floor(Math.random() * (insensitive.length + sensitive.length + 1));
-            var k = (insensitive + sensitive).substr(rand,1);
-        } else {
-            var rand = Math.floor(Math.random() * (insensitive.length + 1));
-            var k = (insensitive).substr(rand,1);
+        var allowedKeys = "";
+        if (this.state.config.allowLowercase) {
+            allowedKeys += _lowerLetters;
         }
+        if (this.state.config.allowUppercase) {
+            allowedKeys += _upperLetters;
+        }
+        if (this.state.config.allowNumbers) {
+            allowedKeys += _numbers;
+        }
+        if (this.state.config.allowSymbols) {
+            allowedKeys += _upperSymbols + _lowerSymbols;
+        }
+
+        var rand = Math.floor(Math.random() * (allowedKeys.length + 1));
+        var k = allowedKeys.substr(rand,1);
 
         return k;
     }
@@ -406,13 +511,11 @@ class Game extends React.Component {
     }
 
     render() {    
-        let status;
-        status = 'Current Key String is : ' + this.getActiveString();
+        var activeString = this.getActiveString();
 
         return (
             <div>
                 <div className="game-info">
-                    <div>{status}</div>
                     <button onClick={() => this.addActiveKey()}>Add Key</button>                    
                 </div> 
                 <label>Score: {this.state.keysPressed}</label>
@@ -420,11 +523,13 @@ class Game extends React.Component {
                 <label>Score To Beat: {this.state.scoreToBeat}</label>
                 <br/><br/>
                 <Config updateConfig={this.updateConfig} config={this.state.config} ></Config>
-                <button onClick={() => this.startGame()}>Start Game~</button>
+                <button onClick={() => this.startGame()}>Start Game~</button>   
+                    <div>Current Key String is : {activeString}</div>
                 <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">                          
+                    <br/>                 
                     <br/>
                     <div>
-                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} showKeys={this.state.config.showKeys} shift={this.state.shift} caseSensitive={this.state.config.caseSensitive}/>                    
+                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} config={this.state.config} shift={this.state.shift} />                    
                     </div>
                 </div> 
 

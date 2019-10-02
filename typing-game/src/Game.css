@@ -64,8 +64,16 @@ body {
     width: 34px;
   }
 
+  .pressed {
+    background-color: yellow;
+  }
+
   .activeKey {
     background-color: lawngreen;
+  }
+
+  .disabled {
+    background-color: lightgray;
   }
 
   .shifted {
