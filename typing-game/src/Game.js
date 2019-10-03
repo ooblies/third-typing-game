@@ -493,20 +493,56 @@ class Game extends React.Component {
 
     componentDidMount() {  
         if (window.location.search.length > 0) {
-            const parsed = queryString.parse(window.location.search.substring(1));
+            const code = queryString.parse(window.location.search.substring(1));
         
-            var conf = JSON.parse(parsed.config);
+            var c = atob(code.code);
+
+            var config = this.state.config;
+            config.lives = parseInt(c.slice(-2),10);
+            config.duration = parseInt(c.slice(-4,-2),10)/10;
+            config.frequency = parseInt(c.slice(-6,-4),10)/10;
+            config.allowSymbols = Boolean(Number(c.slice(-7,-6)));
+            config.allowNumbers = Boolean(Number(c.slice(-8,-7)));
+            config.allowUppercase = Boolean(Number(c.slice(-9,-8)));
+            config.allowLowercase = Boolean(Number(c.slice(-10,-9)));
+            config.showKeys = Boolean(Number(c.slice(-11,-10)));
+            config.showKeyboard = Boolean(Number(c.slice(-12,-11)));
+            var score = parseInt(c.slice(-15,-12),10);            
+
+
+            //var conf = JSON.parse(parsed.config);
 
             this.setState({
-                config:conf,
-                scoreToBeat:parsed.score,
+                config:config,
+                scoreToBeat:score,
             });
         }        
     }
 
     shareGame() {
+        var config = this.state.config;
+
+        var strScore = ("000" + this.state.keysPressed.toString()).slice(-3);
+        var strKeyboard = config.showKeyboard ? "1" : "0";
+        var strKeys = config.showKeys ? "1" : "0";
+        var strLower = config.allowLowercase ? "1" : "0";
+        var strUpper = config.allowUppercase ? "1" : "0";
+        var strNumbers = config.allowNumbers ? "1" : "0";
+        var strSymbols = config.allowSymbols ? "1" : "0";
+        var strFreq = ("0" + (config.frequency * 10).toString()).slice(-2);
+        var strDuration = ("0" + (config.duration * 10).toString()).slice(-2);
+        var strLives = ("0" + config.lives.toString()).slice(-2);
+
+        var strCode = strScore + strKeyboard + strKeys + strLower + strUpper + strNumbers + strSymbols + strFreq + strDuration + strLives;
+
+        var code = btoa(strCode);
+
+        console.log(strCode);
+        console.log(code);
+
         this.setState({
-            shareURL: window.location.href.split('?')[0] + '?config=' + JSON.stringify(this.state.config) + '&score=' + this.state.keysPressed,
+            //shareURL: window.location.href.split('?')[0] + '?config=' + JSON.stringify(this.state.config) + '&score=' + this.state.keysPressed,
+            shareURL : window.location.href.split('?')[0] + '?code=' + code,
         });        
     }
 
