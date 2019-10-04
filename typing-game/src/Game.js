@@ -455,10 +455,7 @@ class Game extends React.Component {
                 })
             }    
             
-
             this.removePressedKey(e.key); 
-            
-            console.log(this.state.pressedKeys);      
         }
     }
     onKeyDown(e) { 
@@ -466,7 +463,6 @@ class Game extends React.Component {
         if (e) {
             
             this.addPressedKey(e.key);
-            console.log(this.state.pressedKeys);
 
             if (e.key === 'Shift') {
                 this.setState({
