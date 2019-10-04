@@ -492,10 +492,10 @@ class Game extends React.Component {
     }
 
     componentDidMount() {  
-        if (window.location.search.length > 0) {
-            const code = queryString.parse(window.location.search.substring(1));
+        if (window.location.pathname.length > 1) {
+            const code = window.location.pathname.slice(1);//queryString.parse(window.location.search.substring(1));
         
-            var c = atob(code.code);
+            var c = atob(code);
 
             var config = this.state.config;
             config.lives = parseInt(c.slice(-2),10);
@@ -542,7 +542,7 @@ class Game extends React.Component {
 
         this.setState({
             //shareURL: window.location.href.split('?')[0] + '?config=' + JSON.stringify(this.state.config) + '&score=' + this.state.keysPressed,
-            shareURL : window.location.href.split('?')[0] + '?code=' + code,
+            shareURL : window.location.origin + '/' + code,
         });        
     }
 
