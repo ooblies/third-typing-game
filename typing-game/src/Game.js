@@ -19,7 +19,7 @@ class Key extends React.Component {
         return (
             <div className={"key " + (this.props.highlighted ? ' activeKey' : '') 
                                    + (this.props.error ? ' errorKey' : '') 
-                                   + (this.props.value === "SHIFT" ? ' shift':'') 
+                                   + (this.props.value === "Shift" ? ' shift':'') 
                                    + (this.props.disabled ? ' disabled' : '')
                                    + (this.props.highlightShift ? " shifted" : '') 
                                    + (this.props.pressed ? ' pressed' : '')} >
@@ -82,9 +82,13 @@ class Keyboard extends React.Component {
             display = this.props.activeString.includes(key) || this.props.activeString.includes(shift) ? display : "";
         }
 
-        
+        var pressed = false;
+        if (this.props.pressedKeys.indexOf(key) > -1 || this.props.pressedKeys.indexOf(shift) > -1) {
+            pressed = true;
+        } 
+
         return (
-            <Key value={display} shiftKey={shift} highlighted={this.props.activeString.includes(display)} showKeys={config.showKeys} error={this.props.errorKeys.includes(display)} highlightShift={shifted} disabled={disabled}></Key>     
+            <Key value={display} shiftKey={shift} highlighted={this.props.activeString.includes(display)} showKeys={config.showKeys} error={this.props.errorKeys.includes(display)} highlightShift={shifted} disabled={disabled} pressed={pressed}></Key>     
         )
     }
 
@@ -107,10 +111,10 @@ class Keyboard extends React.Component {
                     {this.renderKey(';',':')}{this.renderKey("'",'"')}                    
                 </div>
                 <div className="row-4">
-                    {this.renderKey('SHIFT','SHIFT')}
+                    {this.renderKey('Shift','Shift')}
                     {this.renderKey('z','Z')}{this.renderKey('x','X')}{this.renderKey('c','C')}{this.renderKey('v','V')}{this.renderKey('b','B')}{this.renderKey('n','N')}{this.renderKey('m','M')}
                     {this.renderKey(',','<')}{this.renderKey('.','>')}{this.renderKey('/','?')}
-                    {this.renderKey('SHIFT','SHIFT')}
+                    {this.renderKey('Shift','Shift')}
                 </div>
             </div>
         );
@@ -256,6 +260,7 @@ class Game extends React.Component {
             timeSinceLastSpawn: 0,
             keysMiseed: 0,
             activeKeys: Array(0),
+            pressedKeys: Array(0),
             errorKeys: Array(0),
             isStarted: false,
             shift: false,
@@ -385,22 +390,39 @@ class Game extends React.Component {
     }
 
     componentWillMount() {
-        document.addEventListener("keydown", this.onKeyPressed.bind(this));
+        document.addEventListener("keydown", this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
         this.intervalHandle = setInterval(this.tick.bind(this),100);
     }
 
     componentWillUnmount() {
-        document.removeEventListener("keydown", this.onKeyPressed.bind(this));
+        document.removeEventListener("keydown", this.onKeyDown.bind(this));
         document.removeEventListener('keyup', this.onKeyUp.bind(this));
         clearInterval(this.interval);
     }      
 
     removeKey(rkey) {
-        var activeKeys = this.state.activeKeys.filter(key => rkey.toUpperCase() !== key.key.toUpperCase());
+        var activeKeys = this.state.activeKeys.filter(key => rkey !== key.key);
 
         this.setState({
             activeKeys: activeKeys,
+        });
+    }
+
+    removePressedKey(rkey) {
+        var pressedKeys = this.state.pressedKeys.filter(key => rkey.toUpperCase() !== key.toUpperCase());
+
+        this.setState({
+            pressedKeys: pressedKeys,
+        });
+    }
+
+    addPressedKey(key) {
+        var pressedKeys = this.state.pressedKeys;
+        pressedKeys.push(key);
+        
+        this.setState({
+            pressedKeys: pressedKeys,
         });
     }
 
@@ -431,18 +453,28 @@ class Game extends React.Component {
                 this.setState({
                     shift: false,
                 })
-            }            
+            }    
+            
+
+            this.removePressedKey(e.key); 
+            
+            console.log(this.state.pressedKeys);      
         }
     }
-    onKeyPressed(e) { 
+    onKeyDown(e) { 
           
         if (e) {
+            
+            this.addPressedKey(e.key);
+            console.log(this.state.pressedKeys);
+
             if (e.key === 'Shift') {
                 this.setState({
                     shift: true,
                 })
                 return;
-            }            
+            }    
+            
         }
         if (this.state.isStarted) {  
             if (e) {
@@ -561,11 +593,11 @@ class Game extends React.Component {
                 <Config updateConfig={this.updateConfig} config={this.state.config} ></Config>
                 <button onClick={() => this.startGame()}>Start Game~</button>   
                     <div>Current Key String is : {activeString}</div>
-                <div className="game" onKeyDown={this.onKeyPressed()} tabIndex="0">                          
+                <div className="game" onKeyDown={this.onKeyDown()} tabIndex="0">                          
                     <br/>                 
                     <br/>
                     <div>
-                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} config={this.state.config} shift={this.state.shift} />                    
+                        <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} config={this.state.config} shift={this.state.shift} pressedKeys={this.state.pressedKeys}/>                    
                     </div>
                 </div> 
 
