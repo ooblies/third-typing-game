@@ -1,6 +1,7 @@
 body {
     font: 14px "Century Gothic", Futura, sans-serif;
     margin: 20px;
+    text-align: center;
   }
   
   ol, ul {
@@ -95,9 +96,42 @@ body {
   .game {
     display: flex;
     flex-direction: row;
+    justify-content: center;
   }
   
   .game-info {
     margin-left: 20px;
   }
   
+  .reversed {
+    direction: rtl;
+  }
+
+  fieldset {
+    margin: 0 auto;
+    max-width: 1000px;
+    min-width: 400px;
+    width: 100%;
+  }
+
+.header {
+  font-size: 72px;
+}
+
+.hide {
+  display:none;
+}
+
+.footer {
+  position: absolute;
+  bottom : 0px;
+  width:98%;
+}
+
+.footerText {
+  width:100%;
+  margin: 0 auto;
+}
+.discord-link {
+  width:150px;
+}

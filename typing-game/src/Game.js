@@ -1,5 +1,9 @@
 import React from 'react';
 import './Game.css';
+import './Toggle.css';
+import './Table.css';
+import './Range.css';
+import Discord from "./Discord.svg";
 var queryString = require('querystring');
 
 
@@ -130,39 +134,160 @@ class Config extends React.Component {
 
         console.log(this.state.config);
     }
+    componentDidMount() {
+        var value = 0;
+        var durationRange = document.getElementById('durationRange');
+        value = Number(durationRange.value);
+
+        //Change slide thumb color on way up
+        if (value > 1) {
+            durationRange.classList.add('ltpurple');
+        }
+        if (value > 2) {
+            durationRange.classList.add('purple');
+        }
+        if (value > 3.5) {
+            durationRange.classList.add('pink');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 1.1) {
+            durationRange.classList.remove('ltpurple');
+        }
+        if (value < 2.1) {
+            durationRange.classList.remove('purple');
+        }
+        if (value < 3.6) {
+            durationRange.classList.remove('pink');
+        }
+
+        var livesRange = document.getElementById('livesRange');
+        value = Number(livesRange.value);
+
+        //Change slide thumb color on way up
+        if (value > 2) {
+            livesRange.classList.add('ltpurple');
+        }
+        if (value > 5) {
+            livesRange.classList.add('purple');
+        }
+        if (value > 7) {
+            livesRange.classList.add('pink');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 3) {
+            livesRange.classList.remove('ltpurple');
+        }
+        if (value < 6) {
+            livesRange.classList.remove('purple');
+        }
+        if (value < 8) {
+            livesRange.classList.remove('pink');
+        }
+
+        
+        var frequencyRange = document.getElementById('frequencyRange');
+        value = Number(frequencyRange.value);
+
+
+        //Change slide thumb color on way up
+        if (value > 1.5) {
+            frequencyRange.classList.add('purple');
+        }
+        if (value > 3) {
+            frequencyRange.classList.add('ltpurple');
+        }
+        if (value > 4){
+            frequencyRange.classList.add('blue');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 1.6) {
+            frequencyRange.classList.remove('purple');
+        }
+        if (value < 3.1) {
+            frequencyRange.classList.remove('ltpurple');
+        }
+        if (value < 4.1) {
+            frequencyRange.classList.remove('blue');
+        }
+    }
 
     updateConfig() {        
         this.props.updateConfig(this.state.config);
     }
-    updateFrequency(e) {
-        var config  = this.state.config;
-        config.frequency = Number(e.target.value);
-        
-        this.setState({
-            config: config,
-        });
-        
-        this.updateConfig();
-    }
+    
     updateDuration(e) {
+        var value = e.target.value;
         var config  = this.state.config;
-        config.duration = Number(e.target.value);
+        config.duration = Number(value);
         
         this.setState({
             config: config,
         });
         
         this.updateConfig();
+        
+        var inputRange = document.getElementById('durationRange');
+
+        //Change slide thumb color on way up
+        if (value > 1) {
+            inputRange.classList.add('ltpurple');
+        }
+        if (value > 2) {
+            inputRange.classList.add('purple');
+        }
+        if (value > 3.5) {
+            inputRange.classList.add('pink');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 1.1) {
+            inputRange.classList.remove('ltpurple');
+        }
+        if (value < 2.1) {
+            inputRange.classList.remove('purple');
+        }
+        if (value < 3.6) {
+            inputRange.classList.remove('pink');
+        }
     }
     updateLives(e) {
+        
+        var value = e.target.value;
         var config  = this.state.config;
-        config.lives = Number(e.target.value);
+        config.lives = Number(value);
         
         this.setState({
             config: config,
         });
         
         this.updateConfig();
+        
+        var inputRange = document.getElementById('livesRange');
+
+        //Change slide thumb color on way up
+        if (value > 2) {
+            inputRange.classList.add('ltpurple');
+        }
+        if (value > 5) {
+            inputRange.classList.add('purple');
+        }
+        if (value > 7) {
+            inputRange.classList.add('pink');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 3) {
+            inputRange.classList.remove('ltpurple');
+        }
+        if (value < 6) {
+            inputRange.classList.remove('purple');
+        }
+        if (value < 8) {
+            inputRange.classList.remove('pink');
+        }
     }
     updateShowKeys(e) {
         var config  = this.state.config;
@@ -224,29 +349,124 @@ class Config extends React.Component {
         
         this.updateConfig();
     }
+    updateFrequency(e) {
+        var value = e.target.value;
+        var config  = this.state.config;
+        config.frequency = Number(value);
+        
+        this.setState({
+            config: config,
+        });
+        
+        this.updateConfig();
+
+        var inputRange = document.getElementById('frequencyRange');
+
+
+        //Change slide thumb color on way up
+        if (value > 1.5) {
+            inputRange.classList.add('purple');
+        }
+        if (value > 3) {
+            inputRange.classList.add('ltpurple');
+        }
+        if (value > 4){
+            inputRange.classList.add('blue');
+        }
+
+        //Change slide thumb color on way down
+        if (value < 1.6) {
+            inputRange.classList.remove('purple');
+        }
+        if (value < 3.1) {
+            inputRange.classList.remove('ltpurple');
+        }
+        if (value < 4.1) {
+            inputRange.classList.remove('blue');
+        }
+    }
 
     render() {
 
         return (
             <div>
-                <div>Config options</div>
-                <label>Key Per Minute: {60 / this.props.config.frequency} KPM</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
-                <br/><br/>
-                <label>Key Duration: {this.props.config.duration}s</label><br/><input type="range" min="0.1" max="5" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
-                <br/><br/>
-                <label>Lives: {this.props.config.lives}</label><br/><input type="range" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
-                <br/><br/>
-                <label>Show Labels:</label> <input type="checkbox" checked={this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
-                <br/><br/>
-                <label>Show Keyboard:</label> <input type="checkbox" checked={this.state.config.showKeyboard} onChange={(e) => {this.updateShowKeyboard(e)}}></input>
-                <br/><br/>
-                <label>Allow Uppercase:</label> <input type="checkbox" checked={this.state.config.allowUppercase} onChange={(e) => {this.updateAllowUppercase(e)}}></input>                
-                <br/><br/>
-                <label>Allow Lowercase:</label> <input type="checkbox" checked={this.state.config.allowLowercase} onChange={(e) => {this.updateAllowLowercase(e)}}></input>
-                <br/><br/>
-                <label>Allow Numbers:</label> <input type="checkbox" checked={this.state.config.allowNumbers} onChange={(e) => {this.updateAllowNumbers(e)}}></input>
-                <br/><br/>
-                <label>Allow Symbols:</label> <input type="checkbox" checked={this.state.config.allowSymbols} onChange={(e) => {this.updateAllowSymbols(e)}}></input>
+                <fieldset>
+                    <legend align="left">Config</legend>
+                    <br/>
+                    <div className="divTable" >
+                        <div className="divTableBody">
+                            <div className="divTableRow">
+                                <div className="divTableCell">
+                                    <label>Key Per Minute: {parseInt(60 / this.props.config.frequency)} KPM</label> {this.props.config.frequency}
+                                    <br/>
+                                    <input className="reversed range pink rangeInvterted" id="frequencyRange" type="range" min="0.1" max="5" step="0.1" value={this.state.config.frequency} onChange={(e) => {this.updateFrequency(e)}}></input>
+                                </div>
+                                <div className="divTableCell">
+                                    <label>Show Keyboard:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.showKeyboard} onChange={(e) => {this.updateShowKeyboard(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>                             
+                                <div className="divTableCell">
+                                    <label>Allow Uppercase:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.allowUppercase} onChange={(e) => {this.updateAllowUppercase(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="divTableRow">
+                                <div className="divTableCell">
+                                    <label>Key Duration: {this.props.config.duration}s</label>
+                                    <br/>
+                                    <input className="range blue" id="durationRange" type="range" min="0.1" max="5" step="0.1" value={this.state.config.duration} onChange={(e) => {this.updateDuration(e)}}></input>
+                                </div>
+                                <div className="divTableCell">
+                                    <label>Show Letters:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.showKeys} onChange={(e) => {this.updateShowKeys(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>   
+                                <div className="divTableCell">
+                                    <label>Allow Lowercase:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.allowLowercase} onChange={(e) => {this.updateAllowLowercase(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="divTableRow">
+                                <div className="divTableCell">
+                                    <label>Lives: {this.props.config.lives}</label>
+                                    <br/>
+                                    <input className="range blue" type="range" id="livesRange" min="1" max="10" step="1" value={this.state.config.lives} onChange={(e) => {this.updateLives(e)}}></input>
+                                </div>
+                                <div className="divTableCell">
+                                    <label>Allow Symbols:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.allowSymbols} onChange={(e) => {this.updateAllowSymbols(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>
+                                <div className="divTableCell">
+                                    <label>Allow Numbers:</label>
+                                    <div className="button round">
+                                        <input type="checkbox" className="checkbox" checked={!this.state.config.allowNumbers} onChange={(e) => {this.updateAllowNumbers(e)}}></input>
+                                        <div className="knobs"></div>
+                                        <div className="layer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </fieldset>
             </div>
         );
     }
@@ -393,6 +613,32 @@ class Game extends React.Component {
         document.addEventListener("keydown", this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
         this.intervalHandle = setInterval(this.tick.bind(this),100);
+
+        if (window.location.pathname.length > 1) {
+            const code = window.location.pathname.slice(1);//queryString.parse(window.location.search.substring(1));
+        
+            var c = atob(code);
+
+            var config = this.state.config;
+            config.lives = parseInt(c.slice(-2),10);
+            config.duration = parseInt(c.slice(-4,-2),10)/10;
+            config.frequency = parseInt(c.slice(-6,-4),10)/10;
+            config.allowSymbols = Boolean(Number(c.slice(-7,-6)));
+            config.allowNumbers = Boolean(Number(c.slice(-8,-7)));
+            config.allowUppercase = Boolean(Number(c.slice(-9,-8)));
+            config.allowLowercase = Boolean(Number(c.slice(-10,-9)));
+            config.showKeys = Boolean(Number(c.slice(-11,-10)));
+            config.showKeyboard = Boolean(Number(c.slice(-12,-11)));
+            var score = parseInt(c.slice(-15,-12),10);            
+
+
+            //var conf = JSON.parse(parsed.config);
+
+            this.setState({
+                config:config,
+                scoreToBeat:score,
+            });
+        }      
     }
 
     componentWillUnmount() {
@@ -520,31 +766,10 @@ class Game extends React.Component {
     }
 
     componentDidMount() {  
-        if (window.location.pathname.length > 1) {
-            const code = window.location.pathname.slice(1);//queryString.parse(window.location.search.substring(1));
+
+        //set config on pathname
         
-            var c = atob(code);
-
-            var config = this.state.config;
-            config.lives = parseInt(c.slice(-2),10);
-            config.duration = parseInt(c.slice(-4,-2),10)/10;
-            config.frequency = parseInt(c.slice(-6,-4),10)/10;
-            config.allowSymbols = Boolean(Number(c.slice(-7,-6)));
-            config.allowNumbers = Boolean(Number(c.slice(-8,-7)));
-            config.allowUppercase = Boolean(Number(c.slice(-9,-8)));
-            config.allowLowercase = Boolean(Number(c.slice(-10,-9)));
-            config.showKeys = Boolean(Number(c.slice(-11,-10)));
-            config.showKeyboard = Boolean(Number(c.slice(-12,-11)));
-            var score = parseInt(c.slice(-15,-12),10);            
-
-
-            //var conf = JSON.parse(parsed.config);
-
-            this.setState({
-                config:config,
-                scoreToBeat:score,
-            });
-        }        
+         
     }
 
     shareGame() {
@@ -579,19 +804,18 @@ class Game extends React.Component {
 
         return (
             <div>
-                <div className="game-info">
-                    <button onClick={() => this.addActiveKey()}>Add Key</button>                    
-                </div> 
-                <label>Score: {this.state.keysPressed}</label>
-                <br/>
-                <label>Score To Beat: {this.state.scoreToBeat}</label>
-                <br/><br/>
+                <span className="header">Typing Battle</span>
                 <Config updateConfig={this.updateConfig} config={this.state.config} ></Config>
                 <button onClick={() => this.startGame()}>Start Game~</button>   
-                    <div>Current Key String is : {activeString}</div>
-                <div className="game" onKeyDown={this.onKeyDown()} tabIndex="0">                          
-                    <br/>                 
-                    <br/>
+                    <div className={this.state.config.showKeyboard ? "hide" : ""}>Current Key String is : {activeString}</div>
+                    
+                    <div className="game-info">     
+                        <label>Score: {this.state.keysPressed}</label>
+                        <br/>
+                        <label>Score To Beat: {this.state.scoreToBeat}</label>             
+                    </div>   
+                <div className="game" onKeyDown={this.onKeyDown()} tabIndex="0">    
+                
                     <div>
                         <Keyboard errorKeys={this.state.errorKeys} activeKeys={this.state.activeKeys} activeString={this.getActiveString()} config={this.state.config} shift={this.state.shift} pressedKeys={this.state.pressedKeys}/>                    
                     </div>
@@ -599,7 +823,14 @@ class Game extends React.Component {
 
                 <button onClick={() => this.shareGame()}>Share</button>     
                 <br/>
-                <a href={this.state.shareURL}>{this.state.shareURL}</a>      
+                <a href={this.state.shareURL}>{this.state.shareURL}</a>    
+                <div className="footer">
+                    <div className="footerText">                        
+                        <a href="https://discord.gg/xGTzgmh">
+                            <img src={Discord} alt="Join the Discord!" className="discord-link" />
+                        </a>     
+                    </div>                      
+                </div>                
             </div>        
         );
     }
